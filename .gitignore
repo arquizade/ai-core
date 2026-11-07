@@ -1,0 +1,4 @@
+.obsidian/workspace*.json
+.DS_Store
+*.env
+secrets/
