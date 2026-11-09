@@ -52,7 +52,7 @@ Interactive TUI setup wizard for ai-core shared AI 2nd brain.
 
 Options:
   -y, --yes, --headless      Run non-interactively using default choices
-  --vault-dir <path>         Specify target vault directory (default: ~/ai-core)
+  --vault-dir <path>         Target vault directory (default: this vault's folder)
   --check, --status          Report whether the target folder is already set up, then exit
   -h, --help                 Display this help message and exit
 
@@ -344,13 +344,23 @@ detect_environment
 
 info "Environment: ${BOLD}${OS_TYPE}${RESET}  ${GREY}·${RESET}  container: ${BOLD}${IS_CONTAINER}${RESET}"
 
-# Determine default vault directory
-DEFAULT_DIR="$HOME/ai-core"
-if [ -d "/Users/dhenmark/Developer/ai-core" ]; then
-    DEFAULT_DIR="/Users/dhenmark/Developer/ai-core"
-elif [ -d "$PWD/.git" ] && [ -f "$PWD/AGENTS.md" ]; then
-    DEFAULT_DIR="$PWD"
-fi
+# Determine default vault directory: the vault checkout this script belongs to,
+# otherwise a fresh ai-core folder beside the current directory. No user-specific
+# paths.
+default_vault_dir() {
+    local root=''
+    root="$(script_dir 2>/dev/null || true)"
+    if [ -n "$root" ]; then
+        root="$(dirname "$root")"
+        if [ -f "$root/AGENTS.md" ]; then
+            printf '%s' "$root"
+            return 0
+        fi
+    fi
+    printf '%s' "$PWD/ai-core"
+}
+
+DEFAULT_DIR="$(default_vault_dir)"
 
 if [ -n "$CUSTOM_VAULT_DIR" ]; then
     VAULT_DIR="$CUSTOM_VAULT_DIR"
@@ -381,7 +391,8 @@ fi
 mkdir -p "$VAULT_DIR"
 success "Target vault directory: ${BOLD}$VAULT_DIR${RESET}"
 
-# If on sandbox container and vault is in /Users/..., ensure ~/ai-core symlink exists
+# Keep ~/ai-core pointing at the chosen vault, so sandboxes and docs that use
+# that path keep working wherever the vault actually lives.
 if [ "$VAULT_DIR" != "$HOME/ai-core" ] && [ -d "$VAULT_DIR" ]; then
     if [ ! -e "$HOME/ai-core" ]; then
         info "Creating ~/ai-core symlink pointing to $VAULT_DIR"
