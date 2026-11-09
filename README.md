@@ -43,7 +43,7 @@ cd ~/ai-core
 Click Fork on GitHub, then clone your fork:
 
 ```
-git clone git@github.com:YOUR-USERNAME/ai-core.git ~/ai-core
+git clone git@github.com:arquizade/ai-core.git ~/ai-core
 ```
 
 ### Option 3: Create the folders with one command
@@ -52,6 +52,12 @@ This command creates the folder structure and starter files in ~/ai-core. Read t
 
 ```
 curl -fsSL https://raw.githubusercontent.com/arquizade/ai-core/main/scripts/setup.sh | bash
+```
+
+To check whether a folder is already set up, without changing anything:
+
+```
+bash scripts/setup.sh --check --vault-dir ~/ai-core
 ```
 
 ## Next steps
